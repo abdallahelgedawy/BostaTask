@@ -44,14 +44,12 @@ final class MovieDetailsViewController: UIViewController {
     }
 
     private func setupUI() {
-        // Poster
         posterImageView.contentMode = .scaleAspectFill
         posterImageView.clipsToBounds = true
         posterImageView.layer.cornerRadius = 16
         posterImageView.layer.masksToBounds = true
         posterImageView.translatesAutoresizingMaskIntoConstraints = false
 
-        // Labels
         titleLabel.font = .boldSystemFont(ofSize: 26)
         titleLabel.numberOfLines = 0
 
@@ -64,7 +62,6 @@ final class MovieDetailsViewController: UIViewController {
         overviewLabel.font = .systemFont(ofSize: 16)
         overviewLabel.numberOfLines = 0
 
-        // ScrollView
         view.addSubview(scrollView)
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(contentView)
@@ -83,7 +80,6 @@ final class MovieDetailsViewController: UIViewController {
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
         ])
 
-        // Stack View
         let stack = UIStackView(arrangedSubviews: [
             posterImageView, titleLabel, releaseDateLabel,
             overviewTitleLabel, overviewLabel

@@ -20,7 +20,7 @@ final class MovieAPIService: MovieAPIServiceProtocol {
 
         do {
             let response = try await AF.request(url)
-                .validate() // Automatically throws if status code is not 200...299
+                .validate() 
                 .serializingDecodable(MoviesResponse.self)
                 .value
 

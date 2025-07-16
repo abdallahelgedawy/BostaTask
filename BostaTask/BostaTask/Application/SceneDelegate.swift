@@ -18,7 +18,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let window = UIWindow(windowScene: windowScene)
 
-        // Dependency Injection here 👇
         let diContainer = AppDIContainer()
         let movieListVC = diContainer.makeMovieListViewController()
         let navController = UINavigationController(rootViewController: movieListVC)

@@ -30,7 +30,6 @@ class MoviesListCollectionViewCell: UICollectionViewCell {
     }
 
     private func setupCardUI() {
-        // Card styling
         contentView.addSubview(cardView)
         cardView.translatesAutoresizingMaskIntoConstraints = false
         cardView.layer.cornerRadius = 12
@@ -41,26 +40,21 @@ class MoviesListCollectionViewCell: UICollectionViewCell {
         cardView.layer.shadowRadius = 4
         cardView.layer.masksToBounds = false
 
-        // ImageView
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 12
         imageView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
 
-        // Title Label
         titleLabel.font = .systemFont(ofSize: 14, weight: .medium)
         titleLabel.numberOfLines = 2
 
-        // Favorite Button
         favoriteButton.tintColor = .systemRed
         favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
 
-        // Add subviews
         cardView.addSubview(imageView)
         cardView.addSubview(titleLabel)
         cardView.addSubview(favoriteButton)
 
-        // Constraints
         imageView.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         favoriteButton.translatesAutoresizingMaskIntoConstraints = false
