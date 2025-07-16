@@ -16,4 +16,10 @@ final class AppDIContainer {
         let viewModel = MovieListViewModel(fetchMoviesUseCase: useCase)
         return MovieListViewController(viewModel: viewModel)
     }
+    
+    func makeMovieDetailsViewController(movie: Movie) -> UIViewController {
+        let viewModel = MovieDetailsViewModel(movie: movie)
+        return MovieDetailsViewController(viewModel: viewModel)
+    }
+
 }

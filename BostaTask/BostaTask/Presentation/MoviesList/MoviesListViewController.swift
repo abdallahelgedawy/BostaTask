@@ -12,7 +12,9 @@ final class MovieListViewController: UIViewController {
     private var collectionView: UICollectionView!
     private let viewModel: MovieListViewModel
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
-
+    private let refreshControl = UIRefreshControl()
+    
+    
     init(viewModel: MovieListViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -30,7 +32,7 @@ final class MovieListViewController: UIViewController {
         bindViewModel()
         viewModel.loadInitialMovies()
         setupLoadingIndicator()
-
+        
     }
     
     private func setupLoadingIndicator() {
@@ -38,13 +40,13 @@ final class MovieListViewController: UIViewController {
         loadingIndicator.color = .darkGray
         loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         loadingIndicator.hidesWhenStopped = true
-
+        
         NSLayoutConstraint.activate([
             loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
-
+    
     
     private func bindViewModel() {
         viewModel.onStateChange = { [weak self] in
@@ -56,14 +58,16 @@ final class MovieListViewController: UIViewController {
                     self.loadingIndicator.startAnimating()
                 case .loaded, .idle:
                     self.loadingIndicator.stopAnimating()
+                    self.refreshControl.endRefreshing()
                 case .error(let message):
                     self.loadingIndicator.stopAnimating()
                     self.showErrorAlert(message: message)
+                    self.refreshControl.endRefreshing()
                 }
                 self.collectionView.reloadData()
             }
         }
-
+        
         viewModel.onFavoriteChanged = { [weak self] indexPath in
             DispatchQueue.main.async {
                 self?.collectionView.reloadItems(at: [indexPath])
@@ -76,53 +80,65 @@ final class MovieListViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
-
-
     
-        private func setupCollectionView() {
-            let layout = UICollectionViewFlowLayout()
-            let spacing: CGFloat = 8
-            let itemsPerRow: CGFloat = 2
-            let itemWidth = (view.bounds.width - (itemsPerRow + 1) * spacing) / itemsPerRow
-            layout.itemSize = CGSize(width: itemWidth, height: itemWidth * 1.8)
-            layout.minimumInteritemSpacing = spacing
-            layout.minimumLineSpacing = spacing
-            collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
-            collectionView.delegate = self
-            collectionView.dataSource = self
-            collectionView.register(MoviesListCollectionViewCell.self, forCellWithReuseIdentifier: "MoviesListCollectionViewCell")
-            collectionView.contentInset = UIEdgeInsets(top: spacing, left: spacing, bottom: spacing, right: spacing)
-            view.addSubview(collectionView)
-        }
+    
+    
+    private func setupCollectionView() {
+        let layout = UICollectionViewFlowLayout()
+        let spacing: CGFloat = 8
+        let itemsPerRow: CGFloat = 2
+        let itemWidth = (view.bounds.width - (itemsPerRow + 1) * spacing) / itemsPerRow
+        layout.itemSize = CGSize(width: itemWidth, height: itemWidth * 1.8)
+        layout.minimumInteritemSpacing = spacing
+        layout.minimumLineSpacing = spacing
+        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.register(MoviesListCollectionViewCell.self, forCellWithReuseIdentifier: "MoviesListCollectionViewCell")
+        collectionView.contentInset = UIEdgeInsets(top: spacing, left: spacing, bottom: spacing, right: spacing)
+        view.addSubview(collectionView)
+        refreshControl.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
+        collectionView.refreshControl = refreshControl
     }
     
-    // MARK: - UICollectionViewDelegate, DataSource
-    extension MovieListViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            viewModel.movies.count
+    @objc private func didPullToRefresh() {
+        viewModel.loadInitialMovies()
+    }
+}
+
+// MARK: - UICollectionViewDelegate, DataSource
+extension MovieListViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        viewModel.movies.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MoviesListCollectionViewCell", for: indexPath) as? MoviesListCollectionViewCell else {
+            return UICollectionViewCell()
         }
-    
-        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MoviesListCollectionViewCell", for: indexPath) as? MoviesListCollectionViewCell else {
-                return UICollectionViewCell()
-            }
-    
-            let movie = viewModel.movies[indexPath.row]
-            cell.configure(with: movie)
-            cell.onFavoriteTapped = { [weak self] in
-                self?.viewModel.toggleFavorite(for: movie.id)
-            }
-    
-            return cell
+        
+        let movie = viewModel.movies[indexPath.row]
+        cell.configure(with: movie)
+        cell.onFavoriteTapped = { [weak self] in
+            self?.viewModel.toggleFavorite(for: movie.id)
         }
+        
+        return cell
+    }
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let movie = viewModel.movies[indexPath.row]
+        let detailsVC = AppDIContainer().makeMovieDetailsViewController(movie: movie)
+        navigationController?.pushViewController(detailsVC, animated: true)
+    }
     
-        func scrollViewDidScroll(_ scrollView: UIScrollView) {
-            let offsetY = scrollView.contentOffset.y
-            let contentHeight = scrollView.contentSize.height
     
-            if offsetY > contentHeight - scrollView.frame.height * 1.5 {
-                viewModel.loadMoreMovies()
-            }
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        
+        if offsetY > contentHeight - scrollView.frame.height * 1.5 {
+            viewModel.loadMoreMovies()
         }
+    }
     
 }

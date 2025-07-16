@@ -11,7 +11,10 @@ extension MovieDTO {
         return Movie(
             id: id,
             title: title,
-            posterPath: poster_path ?? ""
+            posterPath: poster_path ?? "",
+            overview: overview ?? "No description available.",
+            release_date: release_date ?? "N/A"
         )
     }
 }
+

@@ -48,8 +48,10 @@ final class MovieListViewModel {
                 self.currentPage += 1
                 self.canLoadMore = !newMovies.isEmpty
                 self.state = .loaded
+            } catch let error as NetworkError {
+                self.state = .error(error.errorDescription ?? "Unknown error")
             } catch {
-                self.state = .error(error.localizedDescription)
+                self.state = .error("Unexpected error")
             }
 
             self.isLoading = false
