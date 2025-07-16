@@ -29,6 +29,7 @@ The app is built using **MVVM + Clean Architecture** with **dependency injection
 
 - **No third-party DI framework**: Chose manual dependency injection for simplicity and testability in a small project.
 - **Alamofire instead of URLSession**: To simplify request/response handling and focus on architecture.
+- **No Snapshot Testing**: Testing is skipped in this version to focus on architecture and networking.
 ---
 
 
